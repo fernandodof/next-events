@@ -1,11 +1,22 @@
+import { MongoClient } from 'mongodb';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+import { findDcument, getMongoClient, insertDocument } from '../../../util/db';
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const {
         method,
         body,
         query: { eventId }
     } = req;
+
+    let client: MongoClient;
+
+    try {
+        client = await getMongoClient();
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to connect to the database' });
+    }
 
     switch (method) {
         case 'POST': {
@@ -16,16 +27,28 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
             }
 
             const comment = {
-                id: new Date().toISOString(),
                 email,
                 name,
-                text
+                text,
+                eventId
             };
-            console.log(comment, eventId);
-            return res.status(201).json({ message: 'Comment added', comment });
+
+            try {
+                const result = await insertDocument(client, 'comments', { ...comment });
+                return res
+                    .status(201)
+                    .json({ message: 'Comment added', comment: { ...comment, id: result.insertedId } });
+            } catch (error) {
+                return res.status(500).json({ message: 'Failed to save comment' });
+            }
         }
         case 'GET': {
-            return res.status(401).json({ message: 'Comment added', comments: [] });
+            try {
+                const comments = await findDcument(client, 'comments', { eventId }, { _id: -1 });
+                return res.status(200).json(comments);
+            } catch (error) {
+                return res.status(500).json({ message: 'Failed to get comments' });
+            }
         }
     }
 

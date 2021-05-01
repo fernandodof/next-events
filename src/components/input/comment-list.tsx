@@ -3,11 +3,11 @@ import React from 'react';
 import { Comment } from './../../../pages/api/comments/model';
 import classes from './comment-list.module.css';
 
-function CommentList(props: { comments: Comment[] }) {
+export default function CommentList(props: { comments: Comment[] }) {
     return (
         <ul className={classes.comments}>
             {props.comments.map((comment) => (
-                <li key={comment.id}>
+                <li key={comment._id}>
                     <p>{comment.text}</p>
                     <div>
                         By <address>{comment.name}</address>
@@ -17,5 +17,3 @@ function CommentList(props: { comments: Comment[] }) {
         </ul>
     );
 }
-
-export default CommentList;

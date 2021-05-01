@@ -19,7 +19,7 @@ export default function Home(props: { featuredEvents: Event[] }) {
 
 export const getStaticProps: GetStaticProps = async () => {
     const featuredEvents = await getFeaturedEvents();
-    console.log(featuredEvents);
+
     return {
         props: {
             featuredEvents
